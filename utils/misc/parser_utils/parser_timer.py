@@ -6,6 +6,6 @@ def timer(func):
         start = time.time()
         result = func(*args, **kwargs)
         end = time.time()
-        print(f"Время выполнения: {end - start}")
+        print(f"Время парсинга: {end - start}")
         return result
     return wrapper

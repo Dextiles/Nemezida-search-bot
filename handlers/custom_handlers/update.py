@@ -1,4 +1,4 @@
-from telebot.types import Message
+from telebot.types import Message # noqa
 from loader import bot
 from parser import Nemez1da_parser as parser_instrument
 from threading import Thread
