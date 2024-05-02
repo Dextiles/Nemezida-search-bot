@@ -1,0 +1,11 @@
+{
+  "update_frequency": 3,
+  "start_endpoints": [
+    "https://nemez1da.ru/voennoplennye/",
+    "https://nemez1da.ru/voennye-prestupniki/",
+    "https://nemez1da.ru/naczistskie-podrazdeleniya/",
+    "https://nemez1da.ru/posobniki/",
+    "https://nemez1da.ru/inostrannye-posobniki-i-naemniki/",
+    "https://nemez1da.ru/posobniki/network-terrorists/"
+  ]
+}
