@@ -11,7 +11,7 @@ from database.db_controller import ParsedDataController as PDC
 
 @bot.message_handler(state=None)
 def bot_echo(message: Message):
-    if session_creator.try_connection():
+    if not session_creator.try_connection():
         if set(".:;!_*-+()/#¤%&)").isdisjoint(message.text):
             message.text = message.text.replace(',', '')
             parser = touch_and_parse.TouchAndParse()
@@ -19,7 +19,8 @@ def bot_echo(message: Message):
             length = len(links)
             if length == 1:
                 data = parser.get_person_data(links[0])
-                bot.reply_to(message, message_creator.get_info_message(data),
+                bot.reply_to(message, f'\U0001F7E2 (Сетевой)\n\n'
+                                      f'{message_creator.get_info_message(data)}',
                              parse_mode='HTML',
                              reply_markup=btn.get_show_more_button(data['Сайт']))
             elif 1 < length < 15:
@@ -45,10 +46,11 @@ def bot_echo(message: Message):
             bot.reply_to(message, f'По вашему запросу найдено очень много совпадений ({length}), уточните запрос!')
         else:
             if length == 1:
-                bot.reply_to(message, f'Есть совпадение!\n\n'
-                                      f'<b>ФИО:</b> {result[0][0]}\n'
-                                      f'<b>Дата рождения:</b> {result[0][1]}\n'
-                                      f'<b>Категория:</b> {result[0][2]}\n',
+                bot.reply_to(message, f'\U0001F534 (Автономный)\n\n'
+                                      f'Есть совпадение!\n\n'
+                                      f'<b>ФИО:</b> {result[0][0]}\n\n'
+                                      f'<b>Дата рождения:</b> {result[0][1]}\n\n'
+                                      f'<b>Категория:</b> {result[0][2]}\n\n',
                              parse_mode='HTML')
             elif length > 1:
                 bot.reply_to(message, f'Обнаружено несколько совпадений: {length}!',
@@ -63,7 +65,8 @@ def show_all(call):
     length = len(links)
     for i, link in enumerate(links, start=1):
         data = parser.get_person_data(link)
-        bot.reply_to(call.message, f'Совпадение {i} из {length}\n\n'
+        bot.reply_to(call.message, f'\U0001F7E2 (Сетевой)\n\n'
+                                   f'Совпадение {i} из {length}\n\n'
                                    f'{message_creator.get_info_message(data)}',
                      parse_mode='HTML',
                      reply_markup=btn.get_show_more_button(data['Сайт']))
@@ -74,7 +77,8 @@ def show_all_offline(call):
     results = PDC().search_persons_by_name_and_date(call.data.split('/')[1])
     length = len(results)
     for i, result in enumerate(results, start=1):
-        bot.reply_to(call.message, f'Совпадение {i} из {length}\n\n'
+        bot.reply_to(call.message, f'\U0001F534 (Автономный)\n\n'
+                                   f'Совпадение {i} из {length}\n\n'
                                    f'<b>ФИО:</b> {result[0]}\n'
                                    f'<b>Дата рождения:</b> {result[1]}\n'
                                    f'<b>Категория:</b> {result[2]}\n',
