@@ -8,7 +8,7 @@ class ParsedDataController:
 
     def save_parsed_data(self, data: pd.DataFrame):
         with self.__engine.connect() as conn:
-            data.to_sql('persons', con=conn, if_exists='append', index=False)
+            data.to_sql('persons', con=conn, if_exists='replace', index=False)
 
     def save_parsed_metadata(self, data: pd.DataFrame):
         with self.__engine.connect() as conn:

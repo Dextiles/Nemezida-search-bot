@@ -1,2 +1,2 @@
-from . import info
 from . import developer
+from . import info
