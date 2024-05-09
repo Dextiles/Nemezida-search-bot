@@ -21,3 +21,6 @@ DEFAULT_COMMANDS = (
     ("info", "Информация о базе данных"),
     ("developer", "Информация о разработчике"),
 )
+
+ONLINE_MESS = '\U0001F7E2 (Сетевой)\n\n'
+OFFLINE_MESS = '\U0001F534 (Автономный)\n\n'

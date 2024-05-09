@@ -6,6 +6,7 @@ from utils.misc import session_creator
 class TouchAndParse:
     def __init__(self):
         self.__query_url = 'https://nemez1da.ru/?s='
+        self.__unparsed_elems = ['spravochnik', 'rassledovaniya', 'files-vch-3057']
         self.__headers = config.HEADERS
         self.__links = list()
 
@@ -17,9 +18,11 @@ class TouchAndParse:
         soup = BeautifulSoup(session_creator.get_session().get(url1, headers=self.__headers).text, 'lxml')
         person_links = soup.find_all('h3', {'class': 'simple-grid-grid-post-title'})
         for link in person_links:
-            url = ''.join([i.lower() for i in url if not i.isdigit() and not i == ' '])
-            if url in link.text.lower().replace(' ', ''):
-                self.__links.append(link.find('a').get('href'))
+            person_link = link.find('a').get('href')
+            if not person_link.split('/')[3] in self.__unparsed_elems:
+                url = ''.join([i.lower() for i in url if not i.isdigit() and not i == ' '])
+                if url in link.text.lower().replace(' ', ''):
+                    self.__links.append(person_link)
         return self.__links
 
     def get_person_data(self, url: str):
