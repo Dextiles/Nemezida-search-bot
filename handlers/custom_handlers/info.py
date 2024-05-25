@@ -2,6 +2,7 @@ from telebot.types import Message # noqa
 from loader import bot
 from database.db_controller import ParsedDataController as Controller
 from keyboards.inline import send_db
+import logging
 
 
 @bot.message_handler(commands=["info"])
@@ -13,6 +14,7 @@ def bot_start(message: Message):
                           f'<b>Всего записей на сайте:</b> {metadata[0][1]}',
                  reply_markup=send_db.get_db_button(),
                  parse_mode='HTML')
+    logging.info(f'id{message.from_user.id} анализ бд')
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'get_db')

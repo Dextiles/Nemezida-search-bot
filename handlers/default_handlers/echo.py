@@ -8,10 +8,12 @@ from keyboards.inline import show_instruction as show_instruction_btn
 from utils.misc import session_creator
 from database.db_controller import ParsedDataController as PDC
 from config_data.config import OFFLINE_MESS, ONLINE_MESS
+import logging
 
 
 @bot.message_handler(state=None)
 def bot_echo(message: Message):
+    logging.info(f'id{message.from_user.id} запрос: "{message.text}"')
     if set(".:;!_*-+()/#¤%&)").isdisjoint(message.text):
         if session_creator.try_connection():
             message.text = message.text.replace(',', '')
@@ -48,6 +50,7 @@ def bot_echo(message: Message):
                                           f'<b>ФИО:</b> {result[0][0]}\n\n'
                                           f'<b>Дата рождения:</b> {result[0][1]}\n\n'
                                           f'<b>Категория:</b> {result[0][2]}\n\n',
+                                 reply_markup=btn.get_show_more_button_offline(),
                                  parse_mode='HTML')
                 elif length > 1:
                     bot.reply_to(message, f'{OFFLINE_MESS}Обнаружено несколько совпадений: {length}!',

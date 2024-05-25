@@ -1,6 +1,7 @@
 from telebot.types import Message
 from keyboards.inline import show_instruction as btn
 from loader import bot
+import logging
 
 
 @bot.message_handler(commands=["start"])
@@ -13,4 +14,5 @@ def bot_start(message: Message):
                           f"Перед началом работы рекомендую изучить <b>инструкцию</b>\n",
                  reply_markup=btn.get_show_instruction_button(),
                  parse_mode='HTML')
+    logging.info(f'id{message.from_user.id} начал работу с ботом')
 
