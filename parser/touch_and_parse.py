@@ -10,10 +10,10 @@ class TouchAndParse:
         self.__headers = config.HEADERS
         self.__links = list()
 
-    def __query_creator(self, query: str):
+    def __query_creator(self, query: str) -> str:
         return self.__query_url + query.replace(' ', '+')
 
-    def get_links(self, url: str):
+    def get_links(self, url: str) -> list[str]:
         url1 = self.__query_creator(url)
         soup = BeautifulSoup(session_creator.get_session().get(url1, headers=self.__headers).text, 'lxml')
         person_links = soup.find_all('h3', {'class': 'simple-grid-grid-post-title'})
