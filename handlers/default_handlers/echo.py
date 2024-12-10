@@ -11,6 +11,7 @@ from config_data.config import OFFLINE_MESS, ONLINE_MESS
 from uuid import uuid1
 import os
 import shutil
+import pandas as pd
 
 
 @bot.message_handler(state=None)
@@ -46,12 +47,8 @@ def bot_echo(message: Message):
                                       f' ({length}), уточните запрос!')
             else:
                 if length == 1:
-                    bot.reply_to(message, f'{OFFLINE_MESS}'
-                                          f'Есть совпадение!\n\n'
-                                          f'<b>ФИО:</b> {result[0][0]}\n\n'
-                                          f'<b>Дата рождения:</b> {result[0][1]}\n\n'
-                                          f'<b>Категория:</b> {result[0][2]}\n\n',
-                                 reply_markup=btn.get_show_more_button_offline(),
+                    report = pd.DataFrame(result).to_dict()
+                    bot.reply_to(message, f'{OFFLINE_MESS}{message_creator.get_info_msg_offline(report)}',
                                  parse_mode='HTML')
                 elif length > 1:
                     bot.reply_to(message, f'{OFFLINE_MESS}Обнаружено несколько совпадений: {length}!',
@@ -82,11 +79,10 @@ def show_all_offline(call):
     results = ControllerData().search_persons_by_name_and_date(call.data.split('/')[1])
     length = len(results)
     for i, result in enumerate(results, start=1):
+        report = pd.DataFrame([result]).to_dict()
         bot.reply_to(call.message, f'{OFFLINE_MESS}'
                                    f'Совпадение {i} из {length}\n\n'
-                                   f'<b>ФИО:</b> {result[0]}\n\n'
-                                   f'<b>Дата рождения:</b> {result[1]}\n\n'
-                                   f'<b>Категория:</b> {result[2]}\n\n',
+                                   f'{message_creator.get_info_msg_offline(report)}',
                      parse_mode='HTML')
 
 
