@@ -1,19 +1,20 @@
 from telebot.types import Message
 from loader import bot
-from parser import touch_and_parse
+from parser import touch_and_parse, file_checker
 from utils.misc import message_creator
 from keyboards.inline import show_more as btn
 from keyboards.inline import show_all as show_all_btn
 from keyboards.inline import show_instruction as show_instruction_btn
 from utils.misc import session_creator
-from database.db_controller import ParsedDataController as PDC
+from database.db_controller import ParsedDataController as ControllerData
 from config_data.config import OFFLINE_MESS, ONLINE_MESS
-import logging
+from uuid import uuid1
+import os
+import shutil
 
 
 @bot.message_handler(state=None)
 def bot_echo(message: Message):
-    logging.info(f'id{message.from_user.id} запрос: "{message.text}"')
     if set(".:;!_*-+()/#¤%&)").isdisjoint(message.text):
         if session_creator.try_connection():
             message.text = message.text.replace(',', '')
@@ -36,7 +37,7 @@ def bot_echo(message: Message):
             else:
                 bot.reply_to(message, f'{ONLINE_MESS}Слишком много результатов ({length}), уточните запрос')
         else:
-            result = PDC().search_persons_by_name_and_date(message.text)
+            result = ControllerData().search_persons_by_name_and_date(message.text)
             length = len(result)
             if result == 'ERROR' or length == 0:
                 bot.reply_to(message, f'{OFFLINE_MESS}По вашему запросу нет совпадений, либо неверный запрос!')
@@ -78,7 +79,7 @@ def show_all(call):
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('offline_show'))
 def show_all_offline(call):
-    results = PDC().search_persons_by_name_and_date(call.data.split('/')[1])
+    results = ControllerData().search_persons_by_name_and_date(call.data.split('/')[1])
     length = len(results)
     for i, result in enumerate(results, start=1):
         bot.reply_to(call.message, f'{OFFLINE_MESS}'
@@ -87,3 +88,44 @@ def show_all_offline(call):
                                    f'<b>Дата рождения:</b> {result[1]}\n\n'
                                    f'<b>Категория:</b> {result[2]}\n\n',
                      parse_mode='HTML')
+
+
+@bot.message_handler(content_types=['document'])
+def package_search(message: Message):
+    try:
+        file_info = bot.get_file(message.document.file_id)
+        if not file_info.file_path.split('.')[1].lower() == 'csv':
+            raise ValueError('\U0000274c Такой формат не поддерживается! Только *.csv!')
+        else:
+            bot.reply_to(message, '\U0001f300 Пожалуйста ждите, выполняю анализ...')
+            uid = uuid1()
+            directory = f'working_directory/{uid}'
+            downloaded_file = bot.download_file(file_info.file_path)
+            os.mkdir(directory)
+            src = f'{directory}/{message.document.file_name}'
+            with open(src, 'wb') as new_file:
+                new_file.write(downloaded_file)
+            result = file_checker.PackageSearch(uid, src).check()
+
+            if not result['error']:
+                if result['matched'] == 0:
+                    bot.send_message(message.chat.id,
+                                     f'Обработано элементов: <b>{result["total"]}</b>\n'
+                                     f'\U0000203C <b>Совпадений не найдено!</b>',
+                                     parse_mode='HTML')
+                else:
+                    with open(result['path'], 'rb') as ready_file:
+                        bot.send_document(message.chat.id,
+                                          ready_file,
+                                          caption=f'Обработано элементов: <b>{result["total"]}</b>\n'
+                                                  f'\U0000203C Найдено совпадений: <b>{result["matched"]}</b>\n'
+                                                  f'Отчет сформирован!',
+                                          parse_mode='HTML')
+            else:
+                raise ValueError(result['error'])
+
+            shutil.rmtree(f'working_directory/{uid}')
+
+    except Exception as ex:
+        bot.reply_to(message, f'Упс..., что-то пошло не так:\n'
+                              f'{ex}')
