@@ -14,7 +14,7 @@ class PackageSearch:
     def check(self) -> dict[str: str] | dict[str: None]:
         matched = list()
         try:
-            persons_to_check = pd.read_csv(self._file_path, encoding='cp1251')
+            persons_to_check: pd.DataFrame = pd.read_csv(self._file_path, encoding='cp1251')
             with self._db_engine.connect() as conn:
                 for person_string_element in persons_to_check.to_numpy():
                     data_simpled: list[str] = person_string_element[0].split(';')
@@ -26,7 +26,7 @@ class PackageSearch:
                     except ValueError:
                         return {'error': 'В списке есть невалидная дата, проверьте!'}
                     data_component: str = ' '.join(data_simpled).strip().lower().title()
-                    result = self.__string_searcher(conn, data_component, date_of_birth)
+                    result: list[tuple[str]] | list[tuple[None]] = self.__string_searcher(conn, data_component, date_of_birth)
                     if result:
                         matched.extend(result)
             return self.__report_generator(matched, len(persons_to_check))
@@ -34,28 +34,28 @@ class PackageSearch:
             return {'error': ex}
 
     @staticmethod
-    def __string_searcher(connection, component: str, date_of_birth: str) -> list:
-        query = (f'SELECT category, '
-                 f'post_title, '
-                 f'data_rozhdeniya, '
-                 f'prozhivaet_po_adresu, '
-                 f'telefon, telegram, '
-                 f'pochta, vkontakte, '
-                 f'fejsbuk,'
-                 f'image, '
-                 f'tvitter, '
-                 f'odnoklassniki, '
-                 f'instagram, '
-                 f'deyatelnost, '
-                 f'komprometiruyushhij_material, '
-                 f'kategoriya, '
-                 f'dolzhnost, '
-                 f'zvanie, '
-                 f'dopolnitelno '
-                 f'from data WHERE post_title LIKE "%{component}%" AND data_rozhdeniya LIKE "{date_of_birth}"')
+    def __string_searcher(connection, component: str, date_of_birth: str) -> list[tuple[str]]:
+        query: str = (f'SELECT category, '
+                      f'post_title, '
+                      f'data_rozhdeniya, '
+                      f'prozhivaet_po_adresu, '
+                      f'telefon, telegram, '
+                      f'pochta, vkontakte, '
+                      f'fejsbuk,'
+                      f'image, '
+                      f'tvitter, '
+                      f'odnoklassniki, '
+                      f'instagram, '
+                      f'deyatelnost, '
+                      f'komprometiruyushhij_material, '
+                      f'kategoriya, '
+                      f'dolzhnost, '
+                      f'zvanie, '
+                      f'dopolnitelno '
+                      f'from data WHERE post_title LIKE "%{component}%" AND data_rozhdeniya LIKE "{date_of_birth}"')
         return connection.execute(db.text(query)).fetchall()
 
-    def __report_generator(self, matched_elements: list, total_len: int):
+    def __report_generator(self, matched_elements: list, total_len: int) -> dict[str: None] | dict[str: str]:
         if not matched_elements:
             return {'error': None, 'matched': 0, 'total': total_len}
         else:
